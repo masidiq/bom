@@ -38,6 +38,13 @@ class API extends REST {
         else
             $this->response('', 404); // If the method not exist with in this class "Page not found".
     }
+    
+    private function tes(){
+        $query = "insert into boms (name) values('KZL')";
+        $r = $this->mysqli->query($query) or die($this->mysqli->error . __LINE__);
+        
+        $this->response($result, 200); // send user details
+    }
 
     // Part
     private function parts() {
@@ -150,7 +157,7 @@ class API extends REST {
         }
         $query = "SELECT * FROM boms";
         $r = $this->mysqli->query($query) or die($this->mysqli->error . __LINE__);
-
+        
         if ($r->num_rows > 0) {
             $result = array();
             while ($row = $r->fetch_assoc()) {
@@ -181,7 +188,7 @@ class API extends REST {
         if ($this->get_request_method() != "POST") {
             $this->response('', 406);
         }
-
+        
         $model = json_decode(file_get_contents("php://input"), true);
         $column_names = array('name', 'customer','created','bom_list_number','project_number','product_number');
         $keys = array_keys($model);
@@ -199,7 +206,18 @@ class API extends REST {
         $query = "INSERT INTO boms (" . trim($columns, ',') . ",last_update) VALUES(" . trim($values, ',') . ",'".date('Y-m-d')."')";
         if (!empty($model)) {
             $r = $this->mysqli->query($query) or die($this->mysqli->error . __LINE__);
-            $success = array('status' => "Success", "msg" => "Customer Created Successfully.", "data" => $customer);
+            $bom_id = $this->mysqli->insert_id;
+            $list = $model['partList'];
+            foreach ($list as $item) {
+                
+                $query2 = "INSERT INTO bom_item (bom_id,part_id,qty) values ('".$bom_id."','".$item['id']."','".$item['qty']."')";
+                $r2 = $this->mysqli->query($query2) or die($this->mysqli->error . __LINE__);
+            }
+            
+            
+            
+            
+            $success = array('status' => "Success", "msg" => "Customer Created Successfully.", "data" => $model);
             $this->response($this->json($success), 200);
         } else
             $this->response('', 204); //"No Content" status
