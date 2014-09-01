@@ -50,47 +50,40 @@
             <div class= "form-group">
                 <label class= "col-md-2"></label>
                 <div class="col-md-4">
-                    <a href="#/" class="btn btn-default">Cancel</a>
+                    <a ng-href="#/" class="btn btn-default">Cancel</a>
                     <button ng-click="saveBom(bom);" 
                             ng-disabled="isClean() || myForm.$invalid"
                             class="btn btn-primary">{{buttonText}}</button>
                 </div>
             </div>
-            <legend>Part List</legend>
-            <div class= "form-group">
-                <label class= "col-md-2"> Part Id </label>
-
-                <div class="col-md-6">
-                    <div class="form-group row">
-                        <div class="col-md-6">
-                            <input type="text" class="form-control" placeholder="Part" ng-model="part.id">
-                        </div>
-                        <div class="col-md-2">
-                            <input type="text" class="form-control" placeholder="Qty" ng-model="part.qty">
-                        </div>
-
-                        <div class="col-md-2">
-                            <button type="button" ng-click="addPart(part);" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Add</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <table class="table table-striped table-hover table-bordered">
-                        <tr>
-                            <th>No</th>
-                            <th>Part Id</th>
-                            <th>Quantity</th>
-                        </tr>
-                        <tr ng-repeat="data in bom.partList">
-                            <td>{{$index+1}}</td>
-                            <td>{{data.id}}</td>
-                            <td>{{data.qty}}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
         </form>
     </div>
+    <div class="col-md-12" ng-show="bom._id > 0">
+                <legend>Part List</legend>
+                <a ng-href="#/bom/detail/{{bom._id}}/add-parts" class="btn btn-default bottom-space">Add Parts</a>
+                <br>
+                <table class="table table-striped table-hover table-bordered">
+                    <tr>
+                        <th>No</th>
+                        <th>Part Id</th>
+                        <th>Quantity</th>
+                    </tr>
+                    <tr ng-repeat="data in bom.partList">
+                        <td>{{$index + 1}}</td>
+                        <td>{{data.id}}</td>
+                        <td>{{data.qty}}</td>
+                    </tr>
+                    <tr ng-show="bom.partList.length == 0">
+                        <td colspan="100">
+                            <div class="col-md-12" >
+                                <div class="col-md-12">
+                                    <h4 class="text-muted">No data</h4>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
 </div>
 
 

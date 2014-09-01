@@ -1,4 +1,4 @@
-var app = angular.module('mgcrea.ngStrapDocs', ['ngRoute', 'ngAnimate','ngSanitize', 'mgcrea.ngStrap']);
+var app = angular.module('mgcrea.ngStrapDocs', ['ngRoute', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap']);
 app.factory("services", ['$http', function($http) {
         var serviceBase = '/bom/services/';
         var obj = {};
@@ -52,6 +52,12 @@ app.factory("services", ['$http', function($http) {
                 return status.data;
             });
         };
+        
+        obj.addBomItem = function(model) {
+            return $http.post(serviceBase + 'updateBomItem', model).then(function(results) {
+                return results;
+            });
+        };
 
 
         return obj;
@@ -73,6 +79,43 @@ app.controller('partListCtrl', function($scope, services) {
                 refresh();
             });
         }
+    };
+});
+
+
+app.controller('bomAddPartsCtrl', function($scope, $filter, $routeParams, services) {
+    refresh();
+    function refresh() {
+        services.getParts().then(function(resp) {
+            $scope.partList = resp.data;
+        });
+    }
+    
+    $scope.selectedParts = [];
+    
+    $scope.addPart = function(data){
+        data.qty = "";
+        $scope.selectedParts.push(angular.copy(data));
+        ($filter('filter')($scope.partList, {id:data.id})[0]).selected = true;
+        
+    };
+
+    $scope.removePart = function(data){
+        
+        var partRemove = $filter('filter')($scope.selectedParts, {id:data.id})[0];
+        $scope.selectedParts.splice(partRemove, 1);
+        
+        ($filter('filter')($scope.partList, {id:data.id})[0]).selected = false;
+    };
+    
+    $scope.submitClick = function(){
+        var data = {
+            bomId : $routeParams.bomId,
+            partList : $scope.selectedParts
+        };
+        services.addBomItem(data).then(function() {
+            
+        });
     };
 });
 
@@ -123,18 +166,20 @@ app.controller('bomListCtrl', function($scope, services) {
     };
 
 
+
 });
 
-app.controller('bomDetailCtrl', function($scope, $rootScope, $location, $routeParams, services, bom) {
-
+app.controller('bomDetailCtrl', function($scope, $rootScope, $location, $routeParams, services,bom) {
     var bomId = ($routeParams.bomId) ? parseInt($routeParams.bomId) : 0;
     $rootScope.title = (bomId > 0) ? 'Edit BOM' : 'Create New BOM';
     $scope.buttonText = (bomId > 0) ? 'Update' : 'Create';
-
+    
     var original = bom.data;
     original._id = bomId;
     $scope.bom = angular.copy(original);
     $scope.bom._id = bomId;
+
+    
 
     $scope.isClean = function() {
         return angular.equals(original, $scope.bom);
@@ -152,10 +197,8 @@ app.controller('bomDetailCtrl', function($scope, $rootScope, $location, $routePa
             });
         }
     };
-
-    $scope.bom = {
-        partList :[]
-    }
+    
+    $scope.bom.partList = [];
     
     $scope.addPart = function(part) {
         $scope.bom.partList.push(angular.copy(part));
@@ -164,7 +207,7 @@ app.controller('bomDetailCtrl', function($scope, $rootScope, $location, $routePa
     };
 });
 
-app.controller('componentCtrl', function($scope ) {
+app.controller('componentCtrl', function($scope) {
     $scope.modal = {
         title: "Title",
         content: "Hello Modal<br />This is a multiline message!",
@@ -175,7 +218,7 @@ app.controller('componentCtrl', function($scope ) {
 
     $scope.alert = {title: 'Holy guacamole!', content: 'Best check yo self, you\'re not looking too good.', type: 'info'};
 
-   
+
 });
 
 app.config(['$routeProvider',
@@ -185,6 +228,11 @@ app.config(['$routeProvider',
                     title: 'PartList',
                     templateUrl: 'partials/part/part-list.html',
                     controller: 'partListCtrl'
+                })
+                .when('/bom/detail/:bomId/add-parts', {
+                    title: 'PartList',
+                    templateUrl: 'partials/bom/bom-add-parts.html',
+                    controller: 'bomAddPartsCtrl'
                 })
                 .when('/component', {
                     title: 'Component',
@@ -207,14 +255,19 @@ app.config(['$routeProvider',
                     templateUrl: 'partials/bom/bom-list.html',
                     controller: 'bomListCtrl'
                 })
-                .when('/bom-detail/:bomId', {
+                .when('/bom/detail/:bomId', {
                     title: 'BOM Detail',
                     templateUrl: 'partials/bom/bom-detail.html',
                     controller: 'bomDetailCtrl',
                     resolve: {
                         bom: function(services, $route) {
                             var bomId = $route.current.params.bomId;
-                            return services.getBom(bomId);
+                            if (bomId > 0) {
+                                return services.getBom(bomId);
+                            }
+                             else {
+                                 return { data: '' };
+                            }
                         }
                     }
                 })

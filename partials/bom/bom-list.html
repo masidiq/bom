@@ -2,7 +2,7 @@
     <div class="col-md-12">
         <legend>Bill of Materials</legend>
         
-        <a class="btn btn-primary btn-default bottom-space" href="#/bom-detail/0"><i class="glyphicon glyphicon-plus"></i>&nbsp;Create New BOM</a>
+        <a class="btn btn-primary btn-default bottom-space" href="#/bom/detail/0"><i class="glyphicon glyphicon-plus"></i>&nbsp;Create New BOM</a>
         
         <div class="table-responsive">
             <table class="table table-striped table-hover table-bordered">
@@ -21,7 +21,7 @@
                         <td>{{data.customer}}</td>
                         <td>{{data.created}}</td>
                         <td>{{data.last_update}}</td>
-                        <td class="text-center"><a href="#/bom-detail/{{data.id}}" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-edit"></span>&nbsp; Edit</a>
+                        <td class="text-center"><a href="#/bom/detail/{{data.id}}" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-edit"></span>&nbsp; Edit</a>
                             <a class="btn btn-danger btn-xs" ng-click="deleteBom(data)"><span class="glyphicon glyphicon-trash"></span>&nbsp; Delete</a></td>
                     </tr>
                     <tr ng-show="bomList.length == 0">

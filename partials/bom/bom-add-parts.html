@@ -1,0 +1,33 @@
+<div class="row">
+    <div class="col-md-12">
+        <legend>Select Parts</legend>
+        <a ng-click="submitClick()" class="btn btn-primary btn-default bottom-space"><i class="glyphicon glyphicon-floppy-disk" ></i>&nbsp;Save</a>
+        <br>
+        <label>Total Part : {{selectedParts.length}}</label>
+        
+            <input type="text" class="form-control bottom-space" ng-model="searchText" placeholder="Filter Keyword">
+        
+        <div class="table-responsive">
+
+            <table class="table table-striped table-hover table-bordered">
+                <thead>
+                <th style="width:1%">No</th>
+                <th>Item Code</th>
+                <th>Description</th>
+                <th class="th-action">Action</th>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="data in partList  | filter:searchText">
+                        <td>{{$index + 1}}</td>
+                        <td>{{data.itemCode}}</td>
+                        <td>{{data.description}}</td>
+                        <td class="text-center">
+                            <a class="btn btn-primary btn-xs" ng-click="addPart(data)" ng-show="!data.selected">Select</a>
+                            <a class="btn btn-danger btn-xs" ng-click="removePart(data)" ng-show="data.selected">Deselect</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

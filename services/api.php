@@ -222,6 +222,24 @@ class API extends REST {
         } else
             $this->response('', 204); //"No Content" status
     }
+    
+    private function updateBomItem() {
+        if ($this->get_request_method() != "POST") {
+            $this->response('', 406);
+        }
+        $model = json_decode(file_get_contents("php://input"), true);
+        if (!empty($model)) {
+            $bom_id = $model['bomId'];
+            $list = $model['partList'];
+            foreach ($list as $item) {
+                $query2 = "INSERT INTO bom_item (bom_id,part_id,qty) values ('".$bom_id."','".$item['id']."','".$item['qty']."')";
+                $r2 = $this->mysqli->query($query2) or die($this->mysqli->error . __LINE__);
+            }
+            $success = array('status' => "Success", "msg" => "Customer Created Successfully.", "data" => $model);
+            $this->response($this->json($success), 200);
+        } else
+            $this->response('', 204); //"No Content" status
+    }
 
     private function updateBom() {
         if ($this->get_request_method() != "POST") {
