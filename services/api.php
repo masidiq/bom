@@ -9,7 +9,7 @@ class API extends REST {
     const DB_SERVER = "127.0.0.1";
     const DB_USER = "root";
     const DB_PASSWORD = "";
-    const DB = "bom";
+    const DB = "masidiq1_bom";
 
     private $db = NULL;
     private $mysqli = NULL;
