@@ -52,7 +52,7 @@ app.factory("services", ['$http', function($http) {
                 return status.data;
             });
         };
-        
+
         obj.addBomItem = function(model) {
             return $http.post(serviceBase + 'updateBomItem', model).then(function(results) {
                 return results;
@@ -63,7 +63,7 @@ app.factory("services", ['$http', function($http) {
         return obj;
     }]);
 
-app.controller('partListCtrl', function($scope, services) {
+app.controller('partListCtrl', function($scope, $alert, services) {
     refresh();
     function refresh() {
         services.getParts().then(function(resp) {
@@ -76,6 +76,14 @@ app.controller('partListCtrl', function($scope, services) {
         if (confirm("Are you sure to delete part code: " + data.itemCode) == true) {
 
             services.deletePart(data.id).then(function() {
+                $alert({
+                    title: 'Success!',
+                    content: 'Part has been deleted',
+                    placement: 'top-right',
+                    type: 'info',
+                    show: true,
+                    duration: 2
+                });
                 refresh();
             });
         }
@@ -83,43 +91,51 @@ app.controller('partListCtrl', function($scope, services) {
 });
 
 
-app.controller('bomAddPartsCtrl', function($scope, $filter, $routeParams, services) {
+app.controller('bomAddPartsCtrl', function($scope, $filter, $alert, $routeParams, $location, services) {
     refresh();
     function refresh() {
         services.getParts().then(function(resp) {
             $scope.partList = resp.data;
         });
     }
-    
+
     $scope.selectedParts = [];
-    
-    $scope.addPart = function(data){
+
+    $scope.addPart = function(data) {
         data.qty = "";
         $scope.selectedParts.push(angular.copy(data));
-        ($filter('filter')($scope.partList, {id:data.id})[0]).selected = true;
-        
+        ($filter('filter')($scope.partList, {id: data.id})[0]).selected = true;
+
     };
 
-    $scope.removePart = function(data){
-        
-        var partRemove = $filter('filter')($scope.selectedParts, {id:data.id})[0];
+    $scope.removePart = function(data) {
+
+        var partRemove = $filter('filter')($scope.selectedParts, {id: data.id})[0];
         $scope.selectedParts.splice(partRemove, 1);
-        
-        ($filter('filter')($scope.partList, {id:data.id})[0]).selected = false;
+
+        ($filter('filter')($scope.partList, {id: data.id})[0]).selected = false;
     };
-    
-    $scope.submitClick = function(){
+
+    $scope.submitClick = function() {
         var data = {
-            bomId : $routeParams.bomId,
-            partList : $scope.selectedParts
+            bomId: $routeParams.bomId,
+            partList: $scope.selectedParts
         };
         services.addBomItem(data).then(function() {
-            
+            $alert({
+                title: 'Success!',
+                content: 'Parts item has been added',
+                placement: 'top-right',
+                type: 'info',
+                show: true,
+                duration: 2
+            });
+            $location.path('/bom/detail/' + $routeParams.bomId);
         });
     };
 });
 
-app.controller('partDetailCtrl', function($scope, $rootScope, $location, $routeParams, services, part) {
+app.controller('partDetailCtrl', function($scope, $rootScope, $alert, $location, $routeParams, services, part) {
 
     var partId = ($routeParams.partId) ? parseInt($routeParams.partId) : 0;
     $rootScope.title = (partId > 0) ? 'Edit Part' : 'Add Part';
@@ -137,11 +153,27 @@ app.controller('partDetailCtrl', function($scope, $rootScope, $location, $routeP
     $scope.savePart = function(part) {
         if (partId <= 0) {
             services.createPart(part).then(function() {
+                $alert({
+                    title: 'Success!',
+                    content: 'Parts has been created',
+                    placement: 'top-right',
+                    type: 'info',
+                    show: true,
+                    duration: 2
+                });
                 $location.path('/part-list');
             });
         }
         else {
             services.updatePart(partId, part).then(function() {
+                $alert({
+                    title: 'Success!',
+                    content: 'Parts has been updated',
+                    placement: 'top-right',
+                    type: 'info',
+                    show: true,
+                    duration: 2
+                });
                 $location.path('/part-list');
             });
         }
@@ -149,7 +181,7 @@ app.controller('partDetailCtrl', function($scope, $rootScope, $location, $routeP
     };
 });
 
-app.controller('bomListCtrl', function($scope, services) {
+app.controller('bomListCtrl', function($scope,$alert, services) {
     refresh();
     function refresh() {
         services.getBoms().then(function(resp) {
@@ -160,6 +192,14 @@ app.controller('bomListCtrl', function($scope, services) {
     $scope.deleteBom = function(data) {
         if (confirm("Are you sure to delete bom : " + data.name) == true) {
             services.deleteBom(data.id).then(function() {
+                 $alert({
+                    title: 'Success!',
+                    content: 'Bom has been deleted',
+                    placement: 'top-right',
+                    type: 'info',
+                    show: true,
+                    duration: 2
+                });
                 refresh();
             });
         }
@@ -169,17 +209,17 @@ app.controller('bomListCtrl', function($scope, services) {
 
 });
 
-app.controller('bomDetailCtrl', function($scope, $rootScope, $location, $routeParams, services,bom) {
+app.controller('bomDetailCtrl', function($scope, $alert, $rootScope, $location, $routeParams, services, bom) {
     var bomId = ($routeParams.bomId) ? parseInt($routeParams.bomId) : 0;
     $rootScope.title = (bomId > 0) ? 'Edit BOM' : 'Create New BOM';
     $scope.buttonText = (bomId > 0) ? 'Update' : 'Create';
-    
+
     var original = bom.data;
     original._id = bomId;
     $scope.bom = angular.copy(original);
     $scope.bom._id = bomId;
 
-    
+
 
     $scope.isClean = function() {
         return angular.equals(original, $scope.bom);
@@ -188,18 +228,35 @@ app.controller('bomDetailCtrl', function($scope, $rootScope, $location, $routePa
     $scope.saveBom = function(model) {
         if (bomId <= 0) {
             services.createBom(model).then(function() {
+                 $alert({
+                    title: 'Success!',
+                    content: 'Bom has been created',
+                    placement: 'top-right',
+                    type: 'info',
+                    show: true,
+                    duration: 2
+                });
                 $location.path('/');
             });
         }
         else {
             services.updateBom(bomId, model).then(function() {
+                 $alert({
+                    title: 'Success!',
+                    content: 'Bom has been updated',
+                    placement: 'top-right',
+                    type: 'info',
+                    show: true,
+                    duration: 2
+                });
                 $location.path('/');
             });
         }
     };
-    
+
     $scope.bom.partList = [];
-    
+
+
     $scope.addPart = function(part) {
         $scope.bom.partList.push(angular.copy(part));
         part.id = '';
@@ -207,7 +264,7 @@ app.controller('bomDetailCtrl', function($scope, $rootScope, $location, $routePa
     };
 });
 
-app.controller('componentCtrl', function($scope) {
+app.controller('componentCtrl', function($scope, $alert) {
     $scope.modal = {
         title: "Title",
         content: "Hello Modal<br />This is a multiline message!",
@@ -216,7 +273,17 @@ app.controller('componentCtrl', function($scope) {
         placement: 'left'
     };
 
-    $scope.alert = {title: 'Holy guacamole!', content: 'Best check yo self, you\'re not looking too good.', type: 'info'};
+    $scope.showAlert = function() {
+        $alert({
+            title: 'Holy guacamole!',
+            content: 'Best check yo self, you\'re not looking too good.',
+            placement: 'top-right',
+            type: 'info',
+            show: true,
+            duration: 2
+        });
+    };
+
 
 
 });
@@ -265,8 +332,8 @@ app.config(['$routeProvider',
                             if (bomId > 0) {
                                 return services.getBom(bomId);
                             }
-                             else {
-                                 return { data: '' };
+                            else {
+                                return {data: ''};
                             }
                         }
                     }
